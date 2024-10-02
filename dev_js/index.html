@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citations</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #citation {
+            margin-bottom: 10px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="citation">Cliquez sur "Reset" pour afficher une citation.</div>
+    <button id="resetButton">Reset</button>
+
+    <script>
+        // Fonction pour récupérer une nouvelle citation
+        function fetchNewCitation() {
+            fetch('/home') // Envoie une requête GET à l'URL /home
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la récupération de la citation');
+                }
+                return response.text(); // Récupère le texte de la réponse
+            })
+            .then(citation => {
+                document.getElementById('citation').innerText = citation; // Met à jour le texte de la citation
+            })
+            .catch(error => {
+                console.error(error);
+                document.getElementById('citation').innerText = "Erreur lors de la récupération de la citation.";
+            });
+        }
+
+        // Événement au clic du bouton
+        document.getElementById('resetButton').addEventListener('click', fetchNewCitation);
+
+        // Charger une citation initiale au chargement de la page
+        window.onload = fetchNewCitation;
+    </script>
+</body>
+</html>
