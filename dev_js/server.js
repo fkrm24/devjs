@@ -9,7 +9,7 @@ function random(items) {
     return items[Math.floor(Math.random() * items.length)];
 }
 
-// Création du serveur HTTP
+// Création du serveur HTTPgit
 const server = http.createServer((req, res) => {
     // Vérifie si l'URL est "/home"
     if (req.url === '/home') {
@@ -28,14 +28,25 @@ const server = http.createServer((req, res) => {
                 citationAleatoire = random(citations);
             } while (citationAleatoire.citation === lastCitation);
 
-            lastCitation = citationAleatoire.citation; // Met à jour la dernière citation
+            lastCitation = citationAleatoire.citation; 
             const responseText = `${citationAleatoire.citation} - ${citationAleatoire.auteur}`;
             
             res.writeHead(200, {'Content-Type': 'text/plain'});
             res.end(responseText);
         });
 
-    } else if (req.url === '/citations') {
+    } else if (req.url.startsWith('/search')) {
+        // Récupère le mot-clé à partir de l'URL
+        const urlParams = new URLSearchParams(req.url.split('?')[1]);
+        const keyword = urlParams.get('keyword');
+
+        if (!keyword) {
+            res.writeHead(400, {'Content-Type': 'text/plain'});
+            res.end('Mot-clé non fourni');
+            return;
+        }
+
+        // Lecture du fichier de citations
         fs.readFile('citations.json', 'utf8', (err, data) => {
             if (err) {
                 res.writeHead(500, {'Content-Type': 'text/plain'});
@@ -44,10 +55,21 @@ const server = http.createServer((req, res) => {
             }
 
             const citations = JSON.parse(data);
-            const allCitations = citations.map(c => `${c.citation} - ${c.auteur}`).join('\n');
+            // Filtrer les citations contenant le mot-clé
+            const citationsFiltrees = citations.filter(citation =>
+                citation.citation.toLowerCase().includes(keyword.toLowerCase())
+            );
 
-            res.writeHead(200, {'Content-Type': 'text/plain'});
-            res.end(allCitations);
+            if (citationsFiltrees.length === 0) {
+                res.writeHead(200, {'Content-Type': 'text/plain'});
+                res.end(`Aucune citation trouvée contenant le mot "${keyword}".`);
+            } else {
+                const resultText = citationsFiltrees.map(c =>
+                    `${c.citation} - ${c.auteur}`
+                ).join('\n');
+                res.writeHead(200, {'Content-Type': 'text/plain'});
+                res.end(resultText);
+            }
         });
 
     } else if (req.url === '/newhome') {

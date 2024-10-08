@@ -14,28 +14,35 @@
             font-size: 24px;
             font-weight: bold;
         }
-        button {
+        button, input {
             padding: 10px 15px;
             font-size: 16px;
+            margin: 5px;
         }
     </style>
 </head>
 <body>
     <div id="citation">Cliquez sur "Reset" pour afficher une citation.</div>
     <button id="resetButton">Reset</button>
+    
+    <h3>Rechercher une citation par mot-clé :</h3>
+    <input type="text" id="searchInput" placeholder="Entrez un mot-clé">
+    <button id="searchButton">Search</button>
+    
+    <div id="searchResult"></div>
 
     <script>
         // Fonction pour récupérer une nouvelle citation
         function fetchNewCitation() {
-            fetch('/home') // Envoie une requête GET à l'URL /home
+            fetch('/home')
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Erreur lors de la récupération de la citation');
                 }
-                return response.text(); // Récupère le texte de la réponse
+                return response.text();
             })
             .then(citation => {
-                document.getElementById('citation').innerText = citation; // Met à jour le texte de la citation
+                document.getElementById('citation').innerText = citation;
             })
             .catch(error => {
                 console.error(error);
@@ -43,8 +50,25 @@
             });
         }
 
-        // Événement au clic du bouton
+        // Fonction pour rechercher des citations contenant un mot-clé
+        function searchCitation() {
+            const keyword = document.getElementById('searchInput').value;
+            fetch(`/search?keyword=${keyword}`)
+            .then(response => response.text())
+            .then(result => {
+                document.getElementById('searchResult').innerText = result;
+            })
+            .catch(error => {
+                console.error(error);
+                document.getElementById('searchResult').innerText = "Erreur lors de la recherche.";
+            });
+        }
+
+        // Événement au clic du bouton Reset
         document.getElementById('resetButton').addEventListener('click', fetchNewCitation);
+        
+        // Événement au clic du bouton Search
+        document.getElementById('searchButton').addEventListener('click', searchCitation);
 
         // Charger une citation initiale au chargement de la page
         window.onload = fetchNewCitation;
